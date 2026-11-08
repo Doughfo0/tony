@@ -9,7 +9,7 @@ from livekit import rtc
 from livekit.agents import JobContext, WorkerOptions, cli
 
 sys.path.insert(0, "/home/ubuntu/scam-assistant")
-import call_demo  # partner's pipeline: Riva ASR -> Nemotron 8B -> Magpie TTS
+import pipeline as call_demo  # frozen copy
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("scam-guard")
