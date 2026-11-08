@@ -218,9 +218,12 @@ object PhoneCallEventStore {
         val next = JSONArray().put(item)
         for (i in 0 until minOf(values.length(), MAX_EVENTS - 1)) next.put(values.getJSONObject(i))
         save(context, next)
-        PhoneCallOutboundClient.request(context, activeId!!, now)
       }
-      TelephonyManager.CALL_STATE_OFFHOOK -> updateActive(context, values, "answered")
+      TelephonyManager.CALL_STATE_OFFHOOK -> {
+        val answeredId = activeId
+        updateActive(context, values, "answered")
+        if (answeredId != null) PhoneCallOutboundClient.request(context, answeredId, now)
+      }
       TelephonyManager.CALL_STATE_IDLE -> {
         val current = activeId?.let { id -> (0 until values.length()).firstOrNull { values.optJSONObject(it)?.optString("id") == id } }
         if (current != null && values.optJSONObject(current)?.optString("result") == "ringing") updateActive(context, values, "missed")

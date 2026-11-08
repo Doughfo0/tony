@@ -263,7 +263,7 @@ export default function CallActivityScreen() {
           <Text style={styles.helper}>
             {enabled
               ? CALL_API_URL
-                ? 'Call watch continues in the background. Incoming calls trigger the configured LiveKit dial-out.'
+                ? 'Call watch continues in the background. Answering an incoming call triggers the configured LiveKit dial-out.'
                 : 'Call watch continues in the background. Add the dial-out server URL to enable LiveKit calls.'
               : 'You can pause call watch at any time.'}
           </Text>

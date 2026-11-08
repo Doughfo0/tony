@@ -183,7 +183,7 @@ export function LocalOnboarding({ onComplete }: LocalOnboardingProps) {
                 textContentType="telephoneNumber"
                 value={phoneNumber}
               />
-              <Text style={styles.fieldHint}>Include your country code. LiveKit will call this number when Tony detects an incoming call.</Text>
+              <Text style={styles.fieldHint}>Include your country code. LiveKit will call this number after you answer an incoming call.</Text>
               {error ? <Text accessibilityRole="alert" style={styles.error}>{error}</Text> : null}
               <Pressable
                 accessibilityRole="button"
