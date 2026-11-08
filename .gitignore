@@ -29,8 +29,10 @@ yarn-error.*
 # macOS
 .DS_Store
 *.pem
+*.apk
 
 # local env files
+.env
 .env*.local
 
 # typescript

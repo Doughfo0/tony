@@ -17,7 +17,8 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.doughfo.tony"
     },
     "web": {
       "output": "server",
@@ -25,6 +26,7 @@
     },
     "plugins": [
       "expo-router",
+      "./plugins/withPhoneCallWatcher",
       [
         "expo-splash-screen",
         {
@@ -32,11 +34,23 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 76
         }
-      ]
+      ],
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {
+        "asyncRoutes": {
+          "web": true
+        }
+      },
+      "eas": {
+        "projectId": "aaa5f004-ecd2-4d09-aa4d-1fcffcf169fa"
+      }
+    },
+    "owner": "doughfo"
   }
 }
