@@ -131,6 +131,7 @@ const server = createServer(async (request, response) => {
   }
 
   if (!verifyDeviceToken(match[1])) {
+    console.warn('Rejected incoming call request: invalid app token');
     json(response, 401, { error: 'invalid_device_token' });
     return;
   }
@@ -141,12 +142,15 @@ const server = createServer(async (request, response) => {
   }
 
   const clientId = request.socket.remoteAddress || 'unknown-device';
+  console.info('Accepted incoming call trigger', { callId, clientId });
   const allowed = allowCall(clientId, callId);
   if (allowed.duplicate) {
+    console.info('Duplicate call trigger ignored', { callId });
     json(response, 200, { status: 'already_requested', callId });
     return;
   }
   if (allowed.limited) {
+    console.warn('Call trigger rate limited', { callId, clientId });
     json(response, 429, { error: 'outbound_call_rate_limited' });
     return;
   }
@@ -163,6 +167,7 @@ const server = createServer(async (request, response) => {
         waitUntilAnswered: false,
       },
     );
+    console.info('LiveKit outbound participant created', { callId, roomName, participantIdentity: participant.participantIdentity });
     json(response, 202, { status: 'dialing', callId, roomName, participantIdentity: participant.participantIdentity });
   } catch (error) {
     console.error('LiveKit outbound call failed:', error instanceof Error ? error.message : 'unknown error');

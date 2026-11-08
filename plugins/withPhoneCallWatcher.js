@@ -277,7 +277,7 @@ object PhoneCallOutboundClient {
   private const val API_URL = "outbound_api_url"
   private const val API_TOKEN = "outbound_api_token"
   private const val DESTINATION = "outbound_destination"
-  private val executor = Executors.newSingleThreadExecutor()
+  private val executor = Executors.newFixedThreadPool(3)
 
   fun configure(context: Context, url: String, token: String, destinationNumber: String) {
     context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
@@ -302,8 +302,9 @@ object PhoneCallOutboundClient {
       try {
         val connection = URL("${'$'}baseUrl/api/calls/incoming").openConnection() as HttpURLConnection
         connection.requestMethod = "POST"
-        connection.connectTimeout = 10000
-        connection.readTimeout = 15000
+        // Render's free service can take about a minute to wake after idling.
+        connection.connectTimeout = 75000
+        connection.readTimeout = 75000
         connection.doOutput = true
         connection.setRequestProperty("Authorization", "Bearer ${'$'}token")
         connection.setRequestProperty("Content-Type", "application/json")
