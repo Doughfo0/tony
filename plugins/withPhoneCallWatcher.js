@@ -183,6 +183,8 @@ object PhoneCallEventStore {
   private const val PREFS = "tony_call_watcher"
   private const val EVENTS = "events"
   private const val ENABLED = "enabled"
+  private const val LAST_OUTBOUND_REQUEST_AT = "last_outbound_request_at"
+  private const val OUTBOUND_RING_SUPPRESSION_MS = 120000L
   private const val MAX_EVENTS = 50
   private var activeId: String? = null
 
@@ -213,6 +215,13 @@ object PhoneCallEventStore {
     val now = System.currentTimeMillis()
     when (state) {
       TelephonyManager.CALL_STATE_RINGING -> {
+        val lastOutboundAt = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+          .getLong(LAST_OUTBOUND_REQUEST_AT, 0L)
+        if (lastOutboundAt > 0L && now - lastOutboundAt < OUTBOUND_RING_SUPPRESSION_MS) {
+          context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().remove(LAST_OUTBOUND_REQUEST_AT).apply()
+          activeId = null
+          return
+        }
         activeId = now.toString()
         val item = JSONObject().put("id", activeId).put("at", now).put("result", "ringing")
         val next = JSONArray().put(item)
@@ -222,7 +231,10 @@ object PhoneCallEventStore {
       TelephonyManager.CALL_STATE_OFFHOOK -> {
         val answeredId = activeId
         updateActive(context, values, "answered")
-        if (answeredId != null) PhoneCallOutboundClient.request(context, answeredId, now)
+        if (answeredId != null) {
+          activeId = null
+          PhoneCallOutboundClient.request(context, answeredId, now)
+        }
       }
       TelephonyManager.CALL_STATE_IDLE -> {
         val current = activeId?.let { id -> (0 until values.length()).firstOrNull { values.optJSONObject(it)?.optString("id") == id } }
@@ -302,6 +314,7 @@ object PhoneCallOutboundClient {
       }
 
       var status = "Outbound call failed"
+      prefs.edit().putLong("last_outbound_request_at", System.currentTimeMillis()).apply()
       try {
         val connection = URL("${'$'}baseUrl/api/calls/incoming").openConnection() as HttpURLConnection
         connection.requestMethod = "POST"
@@ -322,9 +335,11 @@ object PhoneCallOutboundClient {
           code == 503 -> "Dial-out server is not configured"
           else -> "Outbound call failed"
         }
+        if (code !in 200..299) prefs.edit().remove("last_outbound_request_at").apply()
         connection.disconnect()
       } catch (_: Exception) {
         status = "Could not reach dial-out server"
+        prefs.edit().remove("last_outbound_request_at").apply()
       }
       PhoneCallEventStore.setOutboundStatus(context, callId, status)
     }
