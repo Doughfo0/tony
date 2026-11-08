@@ -1,0 +1,10 @@
+﻿# bundles and backups
+*.tgz
+*.bak
+# runtime output (may contain call transcripts / phone numbers)
+logs/
+# secrets and environments
+.env
+.venv/
+*-env/
+__pycache__/
